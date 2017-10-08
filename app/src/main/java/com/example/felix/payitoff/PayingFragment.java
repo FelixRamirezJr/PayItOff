@@ -2,14 +2,20 @@ package com.example.felix.payitoff;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.felix.payitoff.dummy.DummyContent;
 import com.example.felix.payitoff.dummy.DummyContent.DummyItem;
@@ -33,6 +39,9 @@ public class PayingFragment extends Fragment {
     ItemAdapter listAdapter;
     View rootView;
     ListView listView;
+    ViewGroup myContainer;
+    FloatingActionButton add_item_button;
+    PopupWindow pw;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -64,11 +73,21 @@ public class PayingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+
+        // Get/Set View's
         rootView = inflater.inflate(R.layout.fragment_paying, container, false);
         listView = rootView.findViewById(R.id.paying_list);
+        myContainer = container;
+        add_item_button = rootView.findViewById( R.id.add_item );
+
+
+        // Setting List Adapter
         listAdapter = new ItemAdapter(getActivity(), test_items() );
         listView.setAdapter(listAdapter);
         listAdapter.notifyDataSetChanged();
+
+        // Set On Click Actions
+        set_add_item_listener( );
 
         return rootView;
     }
@@ -106,11 +125,55 @@ public class PayingFragment extends Fragment {
         void onListFragmentInteraction(DummyItem item);
     }
 
-    List test_items(){
+    List test_items()
+    {
         List<Item> items = new ArrayList<>();
         for( int i = 0; i < 10; i++ ){
             items.add( new Item( "item_" + Integer.toString(i), (i + 1 * 100 ) ) );
         }
         return items;
     }
+
+    void set_add_item_listener()
+    {
+        add_item_button.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v)
+            {
+                Toast.makeText(getContext(), "Hi", Toast.LENGTH_LONG).show();
+                add_more_popup(v);
+            }
+        });
+    }
+
+    void add_more_popup(View v)
+    {
+        try
+        {
+            //We need to get the instance of the LayoutInflater, use the context of this activity
+            LayoutInflater inflater = (LayoutInflater) getContext()
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            //Inflate the view from a predefined XML layout
+            View layout = inflater.inflate(R.layout.add_more_popup, myContainer, false);
+            // create a 300px width and 470px height PopupWindow
+            pw = new PopupWindow(layout, 1000, 1000, true);
+            // display the popup in the center
+            pw.showAtLocation(v, Gravity.CENTER, 0, 0);
+
+            //TextView mResultText = (TextView) layout.findViewById(R.id.server_status_text);
+            Button cancelButton = (Button) layout.findViewById(R.id.cancel_add_item_popup);
+            cancelButton.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), "trying to cancel!", Toast.LENGTH_SHORT).show();
+                    pw.dismiss();
+                }
+            });
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
