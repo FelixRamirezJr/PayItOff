@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,11 @@ import android.widget.Toast;
 
 import com.example.felix.payitoff.dummy.DummyContent;
 import com.example.felix.payitoff.dummy.DummyContent.DummyItem;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +48,9 @@ public class PayingFragment extends Fragment {
     ViewGroup myContainer;
     FloatingActionButton add_item_button;
     PopupWindow pw;
+    DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
+    List <Item> itemList = new ArrayList<>();
+
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -72,7 +81,7 @@ public class PayingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        // Load Items
 
         // Get/Set View's
         rootView = inflater.inflate(R.layout.fragment_paying, container, false);
@@ -80,14 +89,17 @@ public class PayingFragment extends Fragment {
         myContainer = container;
         add_item_button = rootView.findViewById( R.id.add_item );
 
-
         // Setting List Adapter
-        listAdapter = new ItemAdapter(getActivity(), test_items() );
+        listAdapter = new ItemAdapter( getActivity(), itemList );
         listView.setAdapter(listAdapter);
+        Log.d("Create", "Notify change!");
         listAdapter.notifyDataSetChanged();
 
         // Set On Click Actions
-        set_add_item_listener( );
+        set_add_item_listener();
+
+        // Load Items
+        load_saved_items();
 
         return rootView;
     }
@@ -125,55 +137,56 @@ public class PayingFragment extends Fragment {
         void onListFragmentInteraction(DummyItem item);
     }
 
-    List test_items()
-    {
-        List<Item> items = new ArrayList<>();
-        for( int i = 0; i < 10; i++ ){
-            items.add( new Item( "item_" + Integer.toString(i), (i + 1 * 100 ) ) );
-        }
-        return items;
-    }
 
+    // This will open a popup to add an item.
     void set_add_item_listener()
     {
         add_item_button.setOnClickListener(new View.OnClickListener()
         {
             public void onClick(View v)
             {
-                Toast.makeText(getContext(), "Hi", Toast.LENGTH_LONG).show();
-                add_more_popup(v);
+                final AddDialog popup = new AddDialog();
+                popup.show( getActivity().getFragmentManager(), "hi" );
             }
         });
     }
 
-    void add_more_popup(View v)
-    {
-        try
-        {
-            //We need to get the instance of the LayoutInflater, use the context of this activity
-            LayoutInflater inflater = (LayoutInflater) getContext()
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            //Inflate the view from a predefined XML layout
-            View layout = inflater.inflate(R.layout.add_more_popup, myContainer, false);
-            // create a 300px width and 470px height PopupWindow
-            pw = new PopupWindow(layout, 1000, 1000, true);
-            // display the popup in the center
-            pw.showAtLocation(v, Gravity.CENTER, 0, 0);
-
-            //TextView mResultText = (TextView) layout.findViewById(R.id.server_status_text);
-            Button cancelButton = (Button) layout.findViewById(R.id.cancel_add_item_popup);
-            cancelButton.setOnClickListener(new View.OnClickListener(){
-                public void onClick(View v) {
-                    Toast.makeText(getContext(), "trying to cancel!", Toast.LENGTH_SHORT).show();
-                    pw.dismiss();
+    void load_saved_items(){
+        mRootRef.orderByKey().addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                if(!dataSnapshot.getValue().toString().contains("null")) {
+                    Log.d("Load saved items","Does not contain null");
+                    Item toAdd  = dataSnapshot.getValue(Item.class);
+                    if(toAdd.name != null) {
+                        Log.d("Load Saved items","Item List add");
+                        itemList.add(toAdd);
+                    }
+                    listAdapter.notifyDataSetChanged();
                 }
-            });
 
+            }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 }

@@ -58,9 +58,11 @@ public class ItemAdapter extends BaseAdapter {
 
         item = myList.get(position);
 
-        TextView name = (TextView) convertView.findViewById(R.id.item_name);
+        TextView name =  convertView.findViewById( R.id.item_name );
+        //TextView amount = convertView.findViewById( R.id.item_amount );
 
         name.setText( item.name );
+        //amount.setText( Double.toString( item.amount ) );
 
 
         return convertView;

@@ -10,4 +10,5 @@
         android:padding="5dp"
         android:id="@+id/item_name" />
 
+
 </RelativeLayout>

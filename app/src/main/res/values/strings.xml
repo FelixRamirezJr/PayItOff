@@ -3,4 +3,6 @@
     <string name="title_paying">Paying</string>
     <string name="title_paid_off">Paid Off</string>
     <string name="title_overview">Overview</string>
+    <string name="name_placeholder">Enter a name</string>
+    <string name="amount_placeholder">Enter an amount</string>
 </resources>

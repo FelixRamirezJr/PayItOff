@@ -13,4 +13,6 @@ public class Item {
         this.name = n;
         this.amount = a;
     }
+
+    Item() {}
 }
